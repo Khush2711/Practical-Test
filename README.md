@@ -1,250 +1,136 @@
-# Auth API
+# MERN Stack User Authentication & Profile Management System
 
-A RESTful authentication API built with Node.js, Express, MongoDB, and JWT — featuring access/refresh token rotation, rate limiting, and protected user routes.
-
----
-
-## Tech Stack
-
-- **Runtime:** Node.js
-- **Framework:** Express v5
-- **Database:** MongoDB via Mongoose
-- **Auth:** JSON Web Tokens (jsonwebtoken) + bcryptjs
-- **Rate Limiting:** express-rate-limit
+This is a full-stack MERN (MongoDB, Express, React, Node.js) application built for a practical assessment. It features a complete user authentication system with JWT access and refresh tokens, profile management, and profile picture uploads.
 
 ---
 
-## Project Structure
+## 🏗️ Project Structure
 
-```
-├── index.js                          # App entry point
+The repository is divided into two main directories:
+
+- `Backend/`: Node.js & Express API with MongoDB.
+- `Frontend/`: React application built with Vite and Tailwind CSS.
+
+---
+
+## ⚙️ Backend Setup Guide
+
+The backend handles all business logic, database interactions, authentication, and secure routing.
+
+### Technologies Used
+- Node.js & Express v5
+- MongoDB (Mongoose)
+- JWT (Access & Refresh Tokens) + bcryptjs
+- express-rate-limit (API Throttling)
+- multer (Profile Picture Uploads)
+- cors
+
+### Backend Structure
+```text
+Backend/
+├── index.js                          # App entry point & configuration
 ├── DB/
-│   └── db_utilise.js                 # MongoDB connection
+│   └── db_utilise.js                 # Database connection logic
 ├── Controllers/
-│   ├── auth.controller.js            # Register, login, logout, refresh
-│   └── user.controller.js            # Get profile, update details, update password
+│   ├── auth.controller.js            # Register, login, logout, refresh logic
+│   └── user.controller.js            # Profile fetching, updates, and uploads
 ├── Middleware/
-│   ├── auth.js                       # JWT protect middleware
-│   └── jwt.js                        # Token generation & verification
+│   ├── auth.js                       # JWT protection middleware
+│   ├── jwt.js                        # Token generation & verification logic
+│   └── upload.js                     # Multer configuration for image uploads
 ├── Models/
 │   └── user.model.js                 # Mongoose user schema
 └── Routes/
-    ├── auth.routes.js                # /api/auth — logout, refresh
-    ├── login-register.routes.js      # /api/auth — register, login (rate limited)
-    └── user.routes.js                # /api/user — protected user routes
+    ├── auth.routes.js                # Logout & token refresh routes
+    ├── login-register.routes.js      # Register & login routes (Rate limited)
+    └── user.routes.js                # Protected user and profile routes
 ```
+
+### Installation & Execution
+
+1. Open a terminal and navigate to the `Backend` directory:
+   ```bash
+   cd Backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure Environment Variables:
+   Create a `.env` file inside the `Backend` folder with the following structure:
+   ```env
+   PORT=4000
+   DB_URL=mongodb://localhost:27017/mern-assessment
+   JWT_SECRET=your_secret_key_here
+   JWT_EXPIRES_IN=15m
+   REFRESH_SECRET=your_refresh_secret_here
+   REFRESH_EXPIRES_SECRET=7d
+   ```
+
+4. Start the server:
+   ```bash
+   node index.js
+   ```
+   The backend will start at `http://localhost:4000`.
 
 ---
 
-## Getting Started
+## 💻 Frontend Setup Guide
 
-### Prerequisites
+The frontend provides a responsive, modern interface for users to authenticate and manage their profiles.
 
-- Node.js >= 18
-- MongoDB instance (local or Atlas)
+### Technologies Used
+- React (Vite)
+- React Router DOM
+- React Hook Form (Form Validation)
+- Tailwind CSS v3 (UI Styling)
+- Axios (API requests)
+- React Hot Toast (Notifications)
+- Lucide React (Icons)
 
-### Installation
-
-```bash
-git clone <repo-url>
-cd <project-folder>
-npm install
+### Frontend Structure
+```text
+Frontend/
+├── index.html                        # HTML template
+├── vite.config.js                    # Vite configuration
+├── tailwind.config.js                # Tailwind configuration
+└── src/
+    ├── main.jsx                      # React entry point & Provider wrapping
+    ├── App.jsx                       # Application router
+    ├── index.css                     # Global styles & Tailwind directives
+    ├── api/
+    │   └── axios.js                  # Axios instance with auth interceptors
+    ├── context/
+    │   └── AuthContext.jsx           # Global state for user authentication
+    ├── components/
+    │   ├── Header.jsx                # Navigation bar
+    │   ├── Footer.jsx                # Footer
+    │   └── ProtectedRoute.jsx        # Route guard for authenticated pages
+    └── pages/
+        ├── Home.jsx                  # Landing page
+        ├── Login.jsx                 # User login page
+        ├── Register.jsx              # User registration page
+        ├── Dashboard.jsx             # User dashboard
+        ├── EditProfile.jsx           # Update profile details & picture
+        └── ChangePassword.jsx        # Update password form
 ```
 
-### Environment Variables
+### Installation & Execution
 
-Create a `.env` file in the root:
+1. Open a new terminal and navigate to the `Frontend` directory:
+   ```bash
+   cd Frontend
+   ```
 
-```env
-PORT=4000
-DB_URL=mongodb://localhost:27017/your-db-name
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-JWT_SECRET=your_access_token_secret
-JWT_EXPIRES_IN=15m
-
-REFRESH_SECRET=your_refresh_token_secret
-REFRESH_EXPIRES_SECRET=7d
-```
-
-### Run
-
-```bash
-node index.js
-```
-
-The server starts at `http://localhost:4000`.
-
----
-
-## API Reference
-
-### Health Check
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/Check` | Confirms the API is live |
-
----
-
-### Auth Routes — `/api/auth`
-
-Rate limited to **10 requests per minute** on register and login.
-
-#### Register
-
-```
-POST /api/auth/register
-```
-
-**Body:**
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
-  "password": "secret123",
-  "confirmPassword": "secret123"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Registered Successfully",
-  "accessToken": "<jwt>",
-  "refreshToken": "<jwt>",
-  "user": { "id": "...", "email": "..." }
-}
-```
-
----
-
-#### Login
-
-```
-POST /api/auth/login
-```
-
-**Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "secret123"
-}
-```
-
----
-
-#### Logout
-
-```
-POST /api/auth/logout
-```
-
-**Body:**
-```json
-{
-  "refreshToken": "<refresh_token>"
-}
-```
-
----
-
-#### Refresh Token
-
-```
-POST /api/auth/refresh
-```
-
-**Body:**
-```json
-{
-  "refreshToken": "<refresh_token>"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "accessToken": "<new_access_token>",
-  "refreshToken": "<new_refresh_token>"
-}
-```
-
----
-
-### User Routes — `/api/user`
-
-All routes require the `Authorization` header:
-
-```
-Authorization: Bearer <access_token>
-```
-
-#### Get Current User
-
-```
-GET /api/user/me
-```
-
-#### Update Profile
-
-```
-PUT /api/user/update
-```
-
-**Body** (all fields optional):
-```json
-{
-  "firstName": "Jane",
-  "lastName": "Doe",
-  "email": "jane@example.com"
-}
-```
-
-#### Update Password
-
-```
-PUT /api/user/update-password
-```
-
-**Body:**
-```json
-{
-  "currentPassword": "oldpassword",
-  "newPassword": "newpassword"
-}
-```
-
----
-
-## Authentication Flow
-
-1. **Register / Login** → receive `accessToken` (short-lived) and `refreshToken` (long-lived)
-2. **Protected requests** → send `accessToken` in the `Authorization: Bearer` header
-3. **Token expired** → call `/api/auth/refresh` with the `refreshToken` to get a new pair
-4. **Logout** → call `/api/auth/logout` to invalidate the refresh token server-side
-
----
-
-## Error Responses
-
-All errors follow this shape:
-
-```json
-{
-  "success": false,
-  "message": "Description of the error"
-}
-```
-
-| Status | Meaning |
-|--------|---------|
-| 400 | Missing or invalid fields |
-| 401 | Unauthenticated / invalid credentials |
-| 403 | Invalid refresh token |
-| 409 | Email already in use |
-| 429 | Too many requests (rate limit) |
-| 500 | Internal server error |
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   The frontend will start at `http://localhost:5173`.
