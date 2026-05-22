@@ -32,10 +32,14 @@ const userData = new mongoose.Schema({
     },
     refreshToken: {
         type: String,
-        default: true
+        default: null
+    },
+    profilePicture: {
+        type: String,
+        default: null
     }
 },
-    { timestamp: true }
+    { timestamps: true }
 );
 
 // Hash Password

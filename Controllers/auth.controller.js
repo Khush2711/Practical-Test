@@ -116,7 +116,7 @@ const logout = async (req, res) => {
             })
         }
 
-        const user = User.findOne({ refreshToken });
+        const user = await User.findOne({ refreshToken });
 
         if (user) {
             user.refreshToken = null;

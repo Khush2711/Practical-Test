@@ -3,12 +3,12 @@ const User = require("../Models/user.model");
 
 const protect = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorizationl
+        const authHeader = req.headers.authorization;
 
         // check authHeader
-        if (!authHeader || !authHeader.startswith('Bearer ')) {
-            res.status(401).json({
-                sucess: false,
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
                 message: "No token provided"
             })
         }
